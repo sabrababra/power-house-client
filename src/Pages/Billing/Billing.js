@@ -14,7 +14,7 @@ const Billing = () => {
 
     const getData = () => {
         const userData = JSON.parse(localStorage.getItem('user'));
-        fetch(`http://localhost:5000/api/billing-list`, {
+        fetch(`https://power-hacks-server.vercel.app/api/billing-list`, {
             method: 'GET',
             headers: {
                 'content-type': 'application/json',
@@ -88,7 +88,7 @@ const Billing = () => {
             setOpenModal(false);
             waitForAddBilling(formData);
 
-            fetch(`http://localhost:5000/api/add-billing`, {
+            fetch(`https://power-hacks-server.vercel.app/api/add-billing`, {
                 method: 'POST',
                 headers: {
                     'content-type': 'application/json',

@@ -41,7 +41,7 @@ const BillingRow = ({ item, getData }) => {
 
 
 
-            fetch(`http://localhost:5000/api/update-billing/${_id}`, {
+            fetch(`https://power-hacks-server.vercel.app/api/update-billing/${_id}`, {
                 method: 'PUT',
                 headers: {
                     'content-type': 'application/json',
@@ -66,7 +66,7 @@ const BillingRow = ({ item, getData }) => {
 
 
     const handleDelete = (id) => {
-        fetch(`http://localhost:5000/api/delete-billing/${id}`, {
+        fetch(`https://power-hacks-server.vercel.app/api/delete-billing/${id}`, {
             method: 'DELETE',
             headers: {
                 'content-type': 'application/json',
