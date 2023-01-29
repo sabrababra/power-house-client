@@ -1,6 +1,7 @@
 import React, { useEffect } from 'react';
 import { Navigate, useLocation } from 'react-router-dom';
 import useUser from '../hook/useUser';
+import Loaded from '../Shared items/Loaded/Loaded';
 
 
 const PrivateRoute = ({ children }) => {
@@ -9,7 +10,7 @@ const PrivateRoute = ({ children }) => {
     const location = useLocation();
 
     if (userLoading) {
-        return <p>loading..</p>
+        return <Loaded />
     }
 
     if (user) {

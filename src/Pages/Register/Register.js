@@ -1,6 +1,9 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import login from '../../Assets/login.png';
+import { toast } from 'react-toastify';
+
+
 const Register = () => {
 
     const [error, setError] = useState('');
@@ -34,6 +37,7 @@ const Register = () => {
                 .then(data => {
                     console.log(data);
                     form.reset();
+                    toast.success('Register Successfully, now please login');
                     navigate('/login');
                 })
 

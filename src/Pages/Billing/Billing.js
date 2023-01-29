@@ -1,11 +1,16 @@
 import React, { useEffect, useState } from 'react';
 import BillingRow from './BillingRow';
+import { toast } from 'react-toastify';
 
 const Billing = () => {
+    const [openModal, setOpenModal] = useState(false);
+    const [BillingData, setBillingData] = useState([]);
     const [searchData, setSearchData] = useState([]);
+    const [search, setSearch] = useState('');
 
     const [phoneError, setPhoneError] = useState('');
     const [paidError, setPaidError] = useState('');
+    const [total, setTotal] = useState(0);
 
     const getData = () => {
         const userData = JSON.parse(localStorage.getItem('user'));
@@ -18,7 +23,11 @@ const Billing = () => {
         })
             .then(res => res.json())
             .then(data => {
-                console.log(data);
+                setBillingData(data);
+                setSearchData(data);
+                const totalPaid = data.reduce((a, b) => a + b.paidAmount, 0)
+                setTotal(totalPaid)
+
             })
             .catch(error => {
                 console.log(error);
@@ -29,6 +38,22 @@ const Billing = () => {
         getData();
     }, [])
 
+    useEffect(() => {
+        console.log(search);
+
+        if (search) {
+            const newData = BillingData.filter(x => x.fullName.toLocaleLowerCase().includes(search.toLocaleLowerCase()) || x.email.toLocaleLowerCase().includes(search.toLocaleLowerCase()) || x.phone.toLocaleLowerCase().includes(search.toLocaleLowerCase()))
+            console.log(newData)
+            setSearchData(newData);
+        } else {
+            setSearchData(BillingData);
+        }
+
+    }, [search])
+
+    const waitForAddBilling = (data) => {
+        setSearchData([...searchData, { ...data, _id: 'Generating Id...' }]);
+    };
 
     const onSubmit = (e) => {
         e.preventDefault();
@@ -48,73 +73,139 @@ const Billing = () => {
             setPaidError('positive amount');
         }
         if (phone.length >= 11 && parseFloat(paidAmount) >= 0) {
-            const formData = { fullName, email, phone, paidAmount };
+            const formData = {
+                fullName: fullName,
+                email: email,
+                phone: phone,
+                paidAmount: parseFloat(paidAmount)
+            };
             setPhoneError('');
             setPaidError('');
             console.log(formData);
+
+            const userData = JSON.parse(localStorage.getItem('user'));
+
+            setOpenModal(false);
+            waitForAddBilling(formData);
+
+            fetch(`http://localhost:5000/api/add-billing`, {
+                method: 'POST',
+                headers: {
+                    'content-type': 'application/json',
+                    authorization: `Bearer ${userData?.accessToken}`
+                },
+                body: JSON.stringify(formData)
+            })
+                .then(res => res.json())
+                .then(data => {
+                    console.log(data);
+                    setTimeout(() => {
+                        getData();
+                        toast.success('Added Successfully');
+                    }, 1000);
+                })
+                .catch(error => {
+                    console.log(error);
+                    setTimeout(() => {
+                        toast.error(`Added Failed (${error})`);
+                        getData();
+                    }, 1000);
+                })
         }
     }
 
+
     return (
-        <div>
-            <div className='w-11/12 mx-auto'>
-                <div className='flex justify-between items-center'>
-                    <img src="" alt="" />
-                    <p>Total Paid: </p>
+        <div className='bg-indigo-50'>
+            <div className='w-11/12 mx-auto py-10'>
+                <div className='flex justify-between items-center bg-indigo-400 p-4 rounded-lg text-xl'>
+                    <p>Billing list</p>
+                    <p>Total Paid: $ {total}</p>
                 </div>
 
-                <div className='w-11/12 lg:w-9/12 mx-auto my-10'>
+                <div className='w-11/12 lg:w-10/12 mx-auto mt-10 bg-indigo-200 p-4 rounded-lg'>
                     <div className='flex justify-between items-center'>
-                        <div className='flex gap-4 items-center'>
-                            <p>Billing</p>
-                            <input type="text" placeholder="Type here" className="input w-full max-w-md border-gray-400" />
+                        <div className='flex gap-4 items-center w-full'>
+                            <p>Search Billing :</p>
+                            <input
+                                type="text"
+                                placeholder="Search by full name, email, phone"
+                                className="input w-full lg:max-w-lg border-gray-400"
+                                onChange={(e) => setSearch(e.target.value)}
+                            />
                         </div>
-                        <label htmlFor="addNewBillingModal" className="btn btn-primary">Add new bill</label>
+                        <label onClick={() => setOpenModal(true)} htmlFor="addNewBillingModal" className="btn btn-primary">Add new bill</label>
                     </div>
 
                     {/* add new billing modal */}
-                    <input type="checkbox" id="addNewBillingModal" className="modal-toggle" />
-                    <div className="modal">
-                        <div className="modal-box relative">
-                            <label htmlFor="addNewBillingModal" className="btn btn-sm btn-circle absolute right-2 top-2">✕</label>
-                            <h3 className="text-lg font-bold">Add New Billing</h3>
-                            <form onSubmit={onSubmit} className='flex flex-col gap-4 my-10'>
-                                <input
-                                    type="text"
-                                    name='fullName'
-                                    placeholder="Full Name" className="input w-full border-gray-700"
-                                    required
-                                />
+                    {
+                        openModal && <>
+                            <input type="checkbox" id="addNewBillingModal" className="modal-toggle" />
+                            <div className="modal">
+                                <div className="modal-box relative">
+                                    <label htmlFor="addNewBillingModal" className="btn btn-sm btn-circle absolute right-2 top-2">✕</label>
+                                    <h3 className="text-lg font-bold">Add New Billing</h3>
 
-                                <input
-                                    type="email"
-                                    name='email'
-                                    placeholder="Email" className="input w-full border-gray-700"
-                                    required
-                                />
+                                    <form onSubmit={onSubmit} className='flex flex-col gap-1 my-5'>
+                                        <div className="form-control">
+                                            <label className="label">
+                                                <span className="label-text">Full name</span>
+                                            </label>
+                                            <input
+                                                type="text"
+                                                name='fullName'
+                                                placeholder="Full Name" className="input w-full border-gray-700"
+                                                required
+                                            />
+                                        </div>
+                                        <div className="form-control">
+                                            <label className="label">
+                                                <span className="label-text">Email</span>
+                                            </label>
+                                            <input
+                                                type="email"
+                                                name='email'
+                                                placeholder="Email" className="input w-full border-gray-700"
+                                                required
+                                            />
+                                        </div>
 
-                                <input
-                                    type="number"
-                                    name='phone'
-                                    placeholder="Phone number" className="input w-full border-gray-700"
-                                    required
-                                />
-                                {phoneError && <p className='text-red-500'>{phoneError}</p>}
+                                        <div className="form-control">
+                                            <label className="label">
+                                                <span className="label-text">Phone</span>
+                                            </label>
+                                            <input
+                                                type="number"
+                                                name='phone'
+                                                placeholder="Phone number" className="input w-full border-gray-700"
+                                                required
+                                            />
+                                            {phoneError && <p className='text-red-500'>{phoneError}</p>}
+                                        </div>
 
-                                <input
-                                    type="number"
-                                    name='paidAmount'
-                                    placeholder="Paid Amount $" className="input w-full border-gray-700"
-                                    required
-                                />
-                                {paidError && <p className='text-red-500'>{paidError}</p>}
+                                        <div className="form-control">
+                                            <label className="label">
+                                                <span className="label-text">Paid Amount</span>
+                                            </label>
+                                            <input
+                                                type="number"
+                                                name='paidAmount'
+                                                placeholder="Paid Amount $" className="input w-full border-gray-700"
+                                                required
+                                            />
+                                            {paidError && <p className='text-red-500'>{paidError}</p>}
+                                        </div>
 
-                                <button className='btn btn-primary w-1/3 mx-auto'>Submit</button>
+                                        <button className='btn btn-primary w-1/3 mx-auto mt-4'>Submit</button>
+
+                                    </form>
+
+                                </div>
+                            </div>
+                        </>
+                    }
 
 
-                            </form>
-                        </div>
-                    </div>
 
                     <div>
                         <div className="overflow-x-auto my-10">
@@ -124,12 +215,18 @@ const Billing = () => {
                                         <th>Billing ID</th>
                                         <th>Full Name</th>
                                         <th>Email</th>
+                                        <th>Phone</th>
                                         <th>Paid Amount</th>
+                                        <th></th>
                                     </tr>
                                 </thead>
                                 <tbody>
                                     {
-                                        <BillingRow />
+                                        searchData.map(item => <BillingRow
+                                            key={item._id}
+                                            item={item}
+                                            getData={getData}
+                                        />)
                                     }
                                 </tbody>
                             </table>

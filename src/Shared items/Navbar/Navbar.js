@@ -1,6 +1,8 @@
 import React, { useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import useUser from '../../hook/useUser';
+import { toast } from 'react-toastify';
+import logo from '../../Assets/logo.svg'
 
 const Navbar = () => {
     const { user, setUserData } = useUser();
@@ -11,7 +13,7 @@ const Navbar = () => {
 
 
     return (
-        <div className="navbar bg-base-100">
+        <div className="navbar bg-base-100 lg:w-11/12 mx-auto">
             <div className="navbar-start">
                 <div className="dropdown">
                     <label tabIndex={0} className="btn btn-ghost lg:hidden">
@@ -23,7 +25,10 @@ const Navbar = () => {
                         <li><Link to='/billing'>Billing</Link></li>
                     </ul>
                 </div>
-                <Link to='/' className="btn btn-ghost normal-case text-xl">Power - Hack </Link>
+                <Link to='/' className="btn btn-ghost text-xl">
+                    <img className='w-12 h-12' src={logo} alt="" />
+                    <p className='text-indigo-600'>Power-Hack</p>
+                </Link>
             </div>
             <div className="navbar-center hidden lg:flex">
                 <ul className="menu menu-horizontal px-1">
@@ -38,6 +43,7 @@ const Navbar = () => {
                         <p>{user.email}</p>
                         <button className='btn btn-ghost' onClick={() => {
                             setUserData(localStorage.clear());
+                            toast.success('Logout successfully')
                         }}>Logout</button>
                     </div>
                     : <Link to='/login' className="btn">Login</Link>

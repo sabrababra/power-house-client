@@ -2,6 +2,8 @@ import React, { useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import login from '../../Assets/login.png';
 import useUser from '../../hook/useUser';
+import { toast } from 'react-toastify';
+
 
 const Login = () => {
   const { user, setUserData } = useUser();
@@ -39,6 +41,7 @@ const Login = () => {
             localStorage.setItem('user', JSON.stringify(data));
             form.reset();
             setUserData(data);
+            toast.success('Login Successfully');
             navigate(from, { replace: true });
           }
         })

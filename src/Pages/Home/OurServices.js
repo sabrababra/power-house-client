@@ -4,7 +4,7 @@ import { servicesData } from '../../dummyData';
 const OurServices = () => {
 
     return (
-        <div className='my-10 w-11/12 lg:w-10/12 mx-auto'>
+        <div className='my-10 w-11/12 lg:w-10/12 mx-auto text-center'>
             <h1 className='text-4xl py-10 font-semibold'>Our Services</h1>
             <p className='text-gray-400 w-10/12 lg:w-8/12 mx-auto '>Firstly, we’re an environmentally friendly renewable energy company offering a broad portfolio of technologies, products, & solutions to our clients globally</p>
 
