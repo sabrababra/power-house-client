@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import BillingRow from './BillingRow';
 import { toast } from 'react-toastify';
+import './Billing.css';
 
 const Billing = () => {
     const [openModal, setOpenModal] = useState(false);
@@ -12,9 +13,14 @@ const Billing = () => {
     const [paidError, setPaidError] = useState('');
     const [total, setTotal] = useState(0);
 
+    const [count, setCount] = useState(0);
+    const [page, setPage] = useState(0);
+    const [size, setSize] = useState(10);
+    const pages = Math.ceil(count / size);
+
     const getData = () => {
         const userData = JSON.parse(localStorage.getItem('user'));
-        fetch(`https://power-hacks-server.vercel.app/api/billing-list`, {
+        fetch(`https://power-hacks-server.vercel.app/api/billing-list?page=${page}&size=${size}`, {
             method: 'GET',
             headers: {
                 'content-type': 'application/json',
@@ -23,9 +29,10 @@ const Billing = () => {
         })
             .then(res => res.json())
             .then(data => {
-                setBillingData(data);
-                setSearchData(data);
-                const totalPaid = data.reduce((a, b) => a + b.paidAmount, 0)
+                setCount(data?.count)
+                setBillingData(data?.info);
+                setSearchData(data?.info);
+                const totalPaid = data?.info.reduce((a, b) => a + b.paidAmount, 0)
                 setTotal(totalPaid)
 
             })
@@ -36,7 +43,7 @@ const Billing = () => {
 
     useEffect(() => {
         getData();
-    }, [])
+    }, [page, size])
 
     useEffect(() => {
         console.log(search);
@@ -52,7 +59,9 @@ const Billing = () => {
     }, [search])
 
     const waitForAddBilling = (data) => {
-        setSearchData([...searchData, { ...data, _id: 'Generating Id...' }]);
+        let newArray=[...searchData];
+        newArray.unshift({ ...data, _id: 'Generating Id...' });
+        setSearchData(newArray);
     };
 
     const onSubmit = (e) => {
@@ -231,6 +240,28 @@ const Billing = () => {
                                 </tbody>
                             </table>
                         </div>
+
+                        <div className="pagination">
+
+                            <div className='pagination-border'>
+                                {
+                                    [...Array(pages).keys()].map(number => <button
+                                        key={number}
+                                        className={page === number ? 'selected' : 'unselect'}
+                                        onClick={() => setPage(number)}
+                                    >
+                                        {number + 1}
+                                    </button>)
+                                }
+                            </div>
+                            {/* <select onChange={event => setSize(event.target.value)}>
+                                <option value="3">3</option>
+                                <option value="6" selected>6</option>
+                                <option value="18">18</option>
+                                <option value="24">24</option>
+                            </select> */}
+                        </div>
+
                     </div>
 
                 </div>
